@@ -1,0 +1,16 @@
+Textfile Encryptor Specification
+-------------------------------------------
+Use Python 3...
+	- hopefully able to pack the whole script into an executable
+	- No retarded python terminal...
+
+Encrypts textfile or zipfiles?? >_<
+2 factor authentication
+	- 1x 6-digit key
+	- 1x USB device 
+		- use USB ID or something as a key??
+
+GUI!!!
+	- Need to Decide between Kivy or PyQt
+	- Flat design
+	- Strong emphasis on UX, easy to navigate + dummy proof
