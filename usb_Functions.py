@@ -1,81 +1,141 @@
 #!/usr/bin/python
 #------------------------------------------------------
-# Template
-#------------------------------------------------------
 # import win32com.client
 # wmi = win32com.client.GetObject ("winmgmts:")
 # for usb in wmi.InstancesOf ("Win32_USBHub"):
 #      print(usb.DeviceID)
 #------------------------------------------------------
-#
 # Main Objective: Obtain the device ID of any USB device being inserted
 #
 # Since we do not know the order of how the ID's are being retrieved, we 
 # need to think of an algorithm to do it...
-#
 #------------------------------------------------------
-# Approach #1: 
+
 #------------------------------------------------------
-# 1. Have for() loop to:
-# 	- Make a super long string out of the device ID's
-# 	- keep track of initial no. of devices
+# Approach 
+#------------------------------------------------------
+# 1. Have a function  to:
+#    - Make a list of USB device data (strings)
+#    - Check the difference between 2 lists & returns it
 # 2. Try to decompose the long string into a list of device ID
 # 3. After user has inserted a new USB device, implement an algorithm to 
 #    compare & find the new device ID (using the list what we make in step 2)
+# 4. Once ID is found, we use another function to extract the VID & PID (HEX)
+#------------------------------------------------------
 
 import win32com.client
 
-old_ID_string = []
-new_ID_string = []
-old_device_Count = 0
-new_device_Count = 0
-wmi = win32com.client.GetObject ("winmgmts:")
+#***********************************************************
+# getDeviceIDList()
+# - Retrieves a list containing info. of all connected USB devices
+# - what we need is the VID & PID of the USB device
+#-----------------------------------------------------------
+# RETURN:   
+# device_list => list of USB device info
+#***********************************************************
+def getDeviceIDList():
 
-# Create a list of initial USB Device ID's
-for usb in wmi.InstancesOf ("Win32_USBHub"):
-      old_ID_string.append( str(usb.DeviceID) )		# Creates the list
-      old_device_Count = old_device_Count + 1		# Keeps track of the # of ID's
+	wmi = win32com.client.GetObject ("winmgmts:")
+	device_list = []
+	device_count = 0
 
-# Prints the list out (for Debugging purposes)
-for i in range(old_device_Count):
-	print(old_ID_string[i])
+	# Create a list of initial USB Device ID's
+	for usb in wmi.InstancesOf ("Win32_USBHub"):
+		device_list.append( str(usb.DeviceID) ) # Creates the list
 
-#------------------------------------------------------------------
-input("\nInsert USB device...\n")
+	# Prints the list out (for Debugging purposes)
+	for i in range( len(device_list) ):
+		print(device_list[i])
 
-# Create a new list of USB Device ID's
-for usb in wmi.InstancesOf ("Win32_USBHub"):
-      new_ID_string.append( str(usb.DeviceID) )		# Creates the list
-      new_device_Count = new_device_Count + 1		# Keeps track of the # of ID's
+	return device_list
 
-# Prints the list out (for Debugging purposes)
-for i in range(new_device_Count):
-	print(new_ID_string[i])
+#***********************************************************
+# getNewDeviceID()
+# - Compares the difference between the 2 input lists & returns it
+#-----------------------------------------------------------
+# PARAM:
+# oldList - list of USB data prior to insertion of the USB device
+# newList - list of USB data after the insertion of the USB device
+#-----------------------------------------------------------
+# RETURN:   
+# -1 		=> if there's anything other than 1 new entry being detected
+# device_ID => difference between the 2 input lists (i.e data string of the new USB device)
+#***********************************************************
+def getNewDeviceID(oldList, newList):
 
-# A series of checks to make sure there's only 1 new USB device ID
-if not(new_device_Count > old_device_Count):
-	print("Error: no new USB devices were detected...")
+	# Obtain the length of each list
+	newListCount = len(newList)
+	oldListCount = len(oldList)
 
-elif(new_device_Count != old_device_Count + 1):
-	print("Error: More than 1 new USB devices were detected...")
+	# Check to ensure there's only 1 new USB device ID
+	if not( newListCount > oldListCount ):
+		print("Error: no new USB devices were detected...")
+	elif( newListCount != oldListCount+1 ):
+		print("Error: More than 1 new USB devices were detected...")
+	else:
+		# Do a comparison betw. the lists to find the new USB device ID
+		for i in range(newListCount):
+			IDmatch = 0
 
-else:
+			# checks if current string in the new list can be found in the old list
+			for j in range(oldListCount):
+				# Tracks the # of matches
+				if newList[i] in oldList[j]:
+					IDmatch = IDmatch + 1
 
-	device_ID = ""
+			# If there wasn't any match, it means new_ID_string[i] is the new device ID!
+			if IDmatch == 0:
+				device_ID = newList[i]
+				print("New ID is:"+device_ID)
+				return device_ID
+	
+	return -1
 
-	# Do a comparison betw. the lists to find the new USB device ID
-	for i in range(new_device_Count):
-		
-		match_count = 0
-		# checks if current string in the new list can be found in the old list
-		for j in range(old_device_Count):
-			# Tracks the # of matches
-			if new_ID_string[i] in old_ID_string[j]:
-				match_count = match_count + 1
+#***********************************************************
+# extractID
+#   - Compares the difference between the 2 input lists & returns it
+#-----------------------------------------------------------
+# PARAM:
+# id_string - string to extract values from
+# tag - indicates the 4-digit HEX-value to extract (VID or PID) 
+#-----------------------------------------------------------
+# RETURN:   
+# tag_value => extracted value of the tag 
+#			   (haven't decide what format I would want to play with)
+#***********************************************************
+def extractID(id_string,tag):
 
-		# If there wasn't any match, it means new_ID_string[i] is the new device ID!
-		if match_count == 0:
-			device_id = new_ID_string[i]
-			print("New ID is:"+device_id)
+	# eg. of ID = "USB\VID_XXXX&PID_YYYY\ZZZZZZ...."
+	# .find gives us index of "V" of VID or "P" of PID
+	index = id_string.find(tag)
+	# +4 & +8 to get index of the 4th & 1st digit respectively
+	tag_value = id_string[(index+4):(index+8)]
+	print(tag_value)
+	# Converts string representing base-16 integer -> decimal integer -> hex integer
+	tag_value = hex(int(tag_value,16))
 
+	return tag_value
+
+#***********************************************************
+# TESTBENCH
+#***********************************************************
+if __name__ == '__main__':
+
+	# oldList = getDeviceIDList()
+	# input("Insert the USB Device")
+	# newList = getDeviceIDList()
+	# USB_string = getNewDeviceID(oldList,newList)
+
+	# if USB_string != -1:
+	# 	input("extracting ID...")
+	# 	extractID(USB_string,"PID")
+	# 	extractID(USB_string,"VID")
+
+	USB_string = "USB\VID_054C&PID_09C2\124861258912521"
+	if USB_string != -1:
+		input("extracting ID...")
+		extractID(USB_string,"PID")
+		extractID(USB_string,"VID")
+
+	input("Done")
 
