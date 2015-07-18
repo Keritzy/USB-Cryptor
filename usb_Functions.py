@@ -1,38 +1,28 @@
 #!/usr/bin/python
-#------------------------------------------------------
-# import win32com.client
-# wmi = win32com.client.GetObject ("winmgmts:")
-# for usb in wmi.InstancesOf ("Win32_USBHub"):
-#      print(usb.DeviceID)
-#------------------------------------------------------
-# Main Objective: Obtain the device ID of any USB device being inserted
-#
-# Since we do not know the order of how the ID's are being retrieved, we 
-# need to think of an algorithm to do it...
-#------------------------------------------------------
 
-#------------------------------------------------------
-# Approach 
-#------------------------------------------------------
-# 1. Have a function  to:
-#    - Make a list of USB device data (strings)
-#    - Check the difference between 2 lists & returns it
-# 2. Try to decompose the long string into a list of device ID
-# 3. After user has inserted a new USB device, implement an algorithm to 
-#    compare & find the new device ID (using the list what we make in step 2)
-# 4. Once ID is found, we use another function to extract the VID & PID (HEX)
-#------------------------------------------------------
+#----------------------------------------------------------------------
+# Main Objective:
+# Obtain the Product ID (PID) & Vendor ID (VID) of any USB device being inserted
+#----------------------------------------------------------------------
+
+#----------------------------------------------------------------------
+# Approach :
+# 1. Make a function to create a list of USB device data (strings)
+# 2. Obtain 2 list of USB device data (1x b4 plugging in the chosen USB device & 1x after)
+# 3. Implement an algorithm to compare & find the new device ID (using the lists made in step 2)
+# 4. Once ID is found, use another algorithm to extract the VID & PID (HEX)
+#----------------------------------------------------------------------
 
 import win32com.client
 
-#***********************************************************
+#**********************************************************************
 # getDeviceIDList()
 # - Retrieves a list containing info. of all connected USB devices
 # - what we need is the VID & PID of the USB device
-#-----------------------------------------------------------
+#----------------------------------------------------------------------
 # RETURN:   
 # device_list => list of USB device info
-#***********************************************************
+#**********************************************************************
 def getDeviceIDList():
 
 	wmi = win32com.client.GetObject ("winmgmts:")
@@ -49,18 +39,18 @@ def getDeviceIDList():
 
 	return device_list
 
-#***********************************************************
+#**********************************************************************
 # getNewDeviceID()
 # - Compares the difference between the 2 input lists & returns it
-#-----------------------------------------------------------
+#----------------------------------------------------------------------
 # PARAM:
 # oldList - list of USB data prior to insertion of the USB device
 # newList - list of USB data after the insertion of the USB device
-#-----------------------------------------------------------
+#----------------------------------------------------------------------
 # RETURN:   
 # -1 		=> if there's anything other than 1 new entry being detected
 # device_ID => difference between the 2 input lists (i.e data string of the new USB device)
-#***********************************************************
+#**********************************************************************
 def getNewDeviceID(oldList, newList):
 
 	# Obtain the length of each list
@@ -91,18 +81,18 @@ def getNewDeviceID(oldList, newList):
 	
 	return -1
 
-#***********************************************************
+#**********************************************************************
 # extractID
 #   - Compares the difference between the 2 input lists & returns it
-#-----------------------------------------------------------
+#----------------------------------------------------------------------
 # PARAM:
 # id_string - string to extract values from
 # tag - indicates the 4-digit HEX-value to extract (VID or PID) 
-#-----------------------------------------------------------
+#----------------------------------------------------------------------
 # RETURN:   
 # tag_value => extracted value of the tag 
 #			   (haven't decide what format I would want to play with)
-#***********************************************************
+#**********************************************************************
 def extractID(id_string,tag):
 
 	# eg. of ID = "USB\VID_XXXX&PID_YYYY\ZZZZZZ...."
@@ -116,9 +106,9 @@ def extractID(id_string,tag):
 
 	return tag_value
 
-#***********************************************************
+#**********************************************************************
 # TESTBENCH
-#***********************************************************
+#**********************************************************************
 if __name__ == '__main__':
 
 	# oldList = getDeviceIDList()
