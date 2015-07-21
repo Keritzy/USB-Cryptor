@@ -33,8 +33,8 @@
 # 3. 
 # XXXX = 4 digit number to indicate how many char the string originally has
 # 
-1234 1234 1234 1234 1234 1234 1234 1234 1234 
-	 VIDW PIDX VIDY PIDZ VIDW PIDX VIDY PIDZ // "WXYZ" is the 4-digit KEY that we have...
+# 1234 1234 1234 1234 1234 1234 1234 1234 1234 
+# 	 VIDW PIDX VIDY PIDZ VIDW PIDX VIDY PIDZ // "WXYZ" is the 4-digit KEY that we have...
 
 # This have to be REVERSIBLE!! >_<
 # This have to be REVERSIBLE!! >_<
@@ -59,22 +59,61 @@
 # 2. Need to think of how to encypt the string lol...
 #
 
-def encryptThisString( inputString, VID, PID, Key ):
+def encryptThisString( inputString, key ):
 
-	strLength = len(inputString)
-	if len <= 100:
-		encryptedString = ">>"		# A class 1 string!
-	else
+	encryptedString = []
+	if len(inputString) <= 100:
+		encryptedString = ">>"		# A class 1 string, extend it!
+		encryptedString = encryptedString + str(len(inputString))
+		for i in range(10):
+			inputString = inputString + "!@#$%^&*()"
+	else:
 		encryptedString = "????"	# A class 2 string!!
 
-	# Insert main encyption algorithm here...
+	#print( "inputString = " + inputString )
+	inputString = str(inputString)
+
+	# Scrambling Algorithm
+	j = 0							# Initialize a j-variable to rotate the chars in scrambleString
+	for i in range( len(inputString) ):
+		# Does a simple encryption by adding ASCII values of the respective chars in both strings
+		tmp_ASCII_value = ord(inputString[i]) + ord(key[j])
+		if tmp_ASCII_value > 255:
+			tmp_ASCII_value - 255
+
+		encryptedString = encryptedString + str(chr(tmp_ASCII_value))
+		j = j + 1
+		if j >= len(key):	
+			j = 0 
 
 	return encryptedString
 
-def decryptThisString( string, VID, PID, Key ):
+def decryptThisString( inputString, key ):
+
+	decryptedString = ""
+	decode = inputString[0:2]
+
+	if ">>" in decode:
+		str_length = int( inputString[3:4] )
+		tmp_string = inputString[4:str_length+4]
+	else:
+		tmp_string = inputString
 
 	decryptedString = ""
 
+	j = 0
+	for i in range( len(tmp_string) ):
+		# Does a simple encryption by adding ASCII values of the respective chars in both strings
+		tmp_ASCII_value = ord(tmp_string[i]) - ord(key[j])
+		if tmp_ASCII_value < 0:
+			tmp_ASCII_value + 255
+
+		decryptedString = decryptedString + str(chr(tmp_ASCII_value))
+
+		j = j + 1
+		if j >= len(key):	
+			j = 0 
+			
 	return decryptedString
 
 #**********************************************************************
@@ -82,9 +121,9 @@ def decryptThisString( string, VID, PID, Key ):
 #**********************************************************************
 if __name__ == '__main__':
 
-	sampleString = ""
+	sampleString = "ooooooooooooooooooooooooooooooooooooo"
 	print( sampleString )
-	print( encryptThisString(sampleString,"0000","FFFF",123456) )
-	print( decryptThisString(sampleString,"0000","FFFF",123456) )
+	print( encryptThisString(sampleString,"0000FFFF123456") )
+	print( decryptThisString(sampleString,"0000FFFF123456") )
 
 	input("Done")
