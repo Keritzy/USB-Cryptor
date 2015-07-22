@@ -65,56 +65,71 @@ def encryptThisString( inputString, key ):
 	if len(inputString) <= 100:
 		encryptedString = ">>"		# A class 1 string, extend it!
 		encryptedString = encryptedString + str(len(inputString))
-		for i in range(10):
+		while len(inputString) < 100:
 			inputString = inputString + "!@#$%^&*()"
 	else:
 		encryptedString = "????"	# A class 2 string!!
 
-	#print( "inputString = " + inputString )
-	inputString = str(inputString)
+	print( "inputString = " + inputString )
+	inputString = inputString.encode('ascii', 'ignore')
+	key = key.encode('ascii', 'ignore')
 
 	# Scrambling Algorithm
 	j = 0							# Initialize a j-variable to rotate the chars in scrambleString
 	for i in range( len(inputString) ):
 		# Does a simple encryption by adding ASCII values of the respective chars in both strings
-		tmp_ASCII_value = ord(inputString[i]) + ord(key[j])
-		if tmp_ASCII_value > 255:
-			tmp_ASCII_value - 255
+	#	print( i )
+		tmp_ASCII_value = inputString[i] + key[j]
+		print(tmp_ASCII_value, end="")
+		print("=", end="")
+		print( inputString[i], end="")
+		print("+", end="")
+		print( key[j])
 
-		encryptedString = encryptedString + str(chr(tmp_ASCII_value))
-		j = j + 1
-		if j >= len(key):	
-			j = 0 
-
-	return encryptedString
-
-def decryptThisString( inputString, key ):
-
-	decryptedString = ""
-	decode = inputString[0:2]
-
-	if ">>" in decode:
-		str_length = int( inputString[3:4] )
-		tmp_string = inputString[4:str_length+4]
-	else:
-		tmp_string = inputString
-
-	decryptedString = ""
-
-	j = 0
-	for i in range( len(tmp_string) ):
-		# Does a simple encryption by adding ASCII values of the respective chars in both strings
-		tmp_ASCII_value = ord(tmp_string[i]) - ord(key[j])
 		if tmp_ASCII_value < 0:
 			tmp_ASCII_value + 255
+		elif tmp_ASCII_value > 255:
+			tmp_ASCII_value - 255
 
-		decryptedString = decryptedString + str(chr(tmp_ASCII_value))
+		tmp_ASCII = chr(tmp_ASCII_value)
 
+		encryptedString = encryptedString + tmp_ASCII
 		j = j + 1
+		print(j)
 		if j >= len(key):	
 			j = 0 
+
+	return encryptedString.encode('ascii', 'ignore')
+
+# def decryptThisString( inputString, key ):
+
+# 	decryptedString = ""
+# 	decode = inputString[0:2]
+
+# 	if ">>" in decode:
+# 		str_length = int( inputString[3:4] )
+# 		tmp_string = inputString[4:str_length+4]
+# 	else:
+# 		tmp_string = inputString
+
+# 	decryptedString = ""
+
+# 	j = 0
+# 	for i in range( len(tmp_string) ):
+# 		# Does a simple encryption by adding ASCII values of the respective chars in both strings
+# 		tmp_ASCII_value = ord(tmp_string[i]) - ord(key[j])
+# 		if tmp_ASCII_value < 0:
+# 			tmp_ASCII_value + 255
+# 		elif tmp_ASCII_value > 255:
+# 			tmp_ASCII_value - 255
+
+# 		decryptedString = decryptedString + chr(tmp_ASCII_value))
+
+# 		j = j + 1
+# 		if j >= len(key):	
+# 			j = 0 
 			
-	return decryptedString
+# 	return decryptedString
 
 #**********************************************************************
 # TESTBENCH
@@ -122,8 +137,14 @@ def decryptThisString( inputString, key ):
 if __name__ == '__main__':
 
 	sampleString = "ooooooooooooooooooooooooooooooooooooo"
+	encryptedString = encryptThisString(sampleString,"0000FFFF123456")
+	#decryptedString = decryptThisString(sampleString,encryptedString)
 	print( sampleString )
-	print( encryptThisString(sampleString,"0000FFFF123456") )
-	print( decryptThisString(sampleString,"0000FFFF123456") )
+	print("")
+	print("")
+	print( encryptedString.decode() )
+	# print("")
+	# print("")
+	# print( decryptedString )
 
 	input("Done")
