@@ -4,13 +4,15 @@ Use Python 3...
 	- hopefully able to pack the whole script into an executable
 	- No retarded python terminal...
 
-Encrypts textfile or zipfiles?? >_<
+Encrypts/Decrypts ASCII-formatted textfiles
+
 2 factor authentication
-	- 1x 6-digit key
+	- 1x 6-digit key (# of digit subject to changes)
 	- 1x USB device 
-		- use USB ID or something as a key??
+		- use Vendor & Product ID (VID,PID)
 
 GUI!!!
-	- Need to Decide between Kivy or PyQt
-	- Flat design
+	- Decided to stick w/ Tkinter since I'm quite familiar w/ it already
+	- Flat design (subject to changes)
+	- As simple as possible, too many features will confuse new users
 	- Strong emphasis on UX, easy to navigate + dummy proof
