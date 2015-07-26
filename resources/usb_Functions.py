@@ -59,10 +59,10 @@ def getNewDeviceID(oldList, newList):
 
 	# Check to ensure there's only 1 new USB device ID
 	if not( newListCount > oldListCount ):
-		print("Error: no new USB devices were detected...")
+		#print("Error: no new USB devices were detected...")
 		return "ERROR"
 	elif( newListCount != oldListCount+1 ):
-		print("Error: More than 1 new USB devices were detected...")
+		#print("Error: More than 1 new USB devices were detected...")
 		return "ERROR"
 	else:
 		# Do a comparison betw. the lists to find the new USB device ID

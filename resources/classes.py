@@ -70,8 +70,11 @@ class InputFileWidget(tk.Frame):
 		    return -1                               	# returns "ERROR" to abort process...
 
 		filePointer.close()
-		return 0
-	# Method for disabling widget
+		return 0	
+	# Method to retrieve value contained EntryField
+	def getValue(self):
+		return self.entryField.get()
+	# Method for disabling the CLASS widget
 	def disable(self):
 		# Disable + unbind events to sub-widgets
 		self.entryField.config(state = tk.DISABLED)
@@ -79,7 +82,7 @@ class InputFileWidget(tk.Frame):
 		self.inputFileButton.unbind("<Enter>")
 		self.inputFileButton.unbind("<Leave>")
 		self.inputFileButton.unbind("<Button-1>")
-	# Method for enabling widget
+	# Method for enabling the CLASS widget
 	def enable(self):
 		# Define events for the pseudoButton
 		def hoverButton(event):		event.widget.config(bg="#FFFFFF")
@@ -98,7 +101,9 @@ class InputFileWidget(tk.Frame):
 # [CLASS] KeyWidget:
 # 	- (Entry) entryField for KEY
 #	  		  Auto-checks if the input value is in the right KEY format
-# 	- (Label) keyLabel for KEY icon
+# 	- (Label) keyLabel for KEY icon for UI
+#	- (Label) statusLabel displays status messages/instructions
+#	- (Label) paddingLabel for padding LOL
 #**********************************************************************
 class KeyWidget(tk.Frame):
 
@@ -127,11 +132,6 @@ class KeyWidget(tk.Frame):
 		self.bottomPadding = tk.Label(self,text="                         ",font="Verdana 13",bg="#272282",borderwidth=0,highlightthickness=0)
 		self.statusLabel = tk.Label(self,text="",font="Verdana 8",bg="#123456",fg=KeyWidget.entryTextColor, justify=LEFT,highlightthickness=0)		
 
-		# Pack the 2 Widgets into a frame
-		# self.statusLabel.pack(side=TOP)
-		# self.keyLabel.pack(side=LEFT)
-		# self.bottomPadding.pack(side=RIGHT)
-		# self.entryField.pack(side=RIGHT)
 		self.statusLabel.grid(row=0,column=1,columnspan=2,sticky=W,pady=3)
 		self.keyLabel.grid(row=1,column=0)
 		self.entryField.grid(row=1,column=1)
@@ -156,114 +156,89 @@ class KeyWidget(tk.Frame):
 		else:
 			self.statusLabel.config(text="Only numeric characters are allowed!")
 			self.entryField.config(bg=KeyWidget.entryBgErrorColor)
+	# Method to retrieve value contained EntryField
+	def getValue(self):
+		return self.entryField.get()
+	# Method for disabling the CLASS widget
+	def disable(self):
+		self.entryField.config(state = tk.DISABLED)
+	# Method for enabling the CLASS widget
+	def enable(self):
+		self.entryField.config(state = tk.NORMAL)
+#**********************************************************************
+# [CLASS] USBWidget:
+# 	- (Label) statusLabel displays status messages/instructions
+#	- (Label) statusLabel to contain Image for UI
+#	- (Label) button for registering USB device
+#**********************************************************************
+class USBWidget(tk.Frame):
 
-# Click me after inserting USB device [red]
-# Remove USB Device & try again [red]
-# USB device registered! [green]
-# Make the text a vector image with holes, then just change frame color when mouse hovers over...
-class USBWidget(tk.Frame)
-
-	hoverColor = "#123456"
-	unhoverColor = "#123456"
-
-	def __init__(self,parent):
-	# Initialize a Frame to group the InputFile Widgets together
-	tk.Frame.__init__(self, parent)
-
-	# Initialize variable to track the state machine...
-	self.state = 1
-
-	# Create a pseudo Button
-	self.button = tk.Label(self)#,image=self.keyImage,borderwidth=0)
-	self.button.pack()
-
-	# Define events for the pseudoButton
-	def hoverButton(event):
-		# if state = 1: 	event.widget.config(image=self.hoverImage1)
-		# elif state = 2: event.widget.config(image=self.hoverImage2)
-		# else: 			event.widget.config(image=self.hoverImage3)
-		event.widget.config(bg=hoverColor)
-
-	def unhoverButton(event):
-		event.widget.config(bg=unhoverColor)
-
-	def clickButton(event):
-		myFileTypes = [ ('Text Files','*.txt') ]
-		# Creates a windows dialog to get user to choose a file to encrypt/decrypt
-		file_path = filedialog.askopenfilename(filetypes=myFileTypes, title="Select a file to encrypt/decrypt" )
-		self.entryField.insert(0,file_path)
-
-	# Bind the events to the pseudoButton
-	self.button.bind("<Enter>", hoverButton)
-	self.button.bind("<Leave>", unhoverButton)
-	self.button.bind("<Button-1>", clickButton )
-
-
-class StartWidget(tk.Frame):
-
-	# Configure Text & Cursor Color [Class Variable]
-	entryBgColor = "#181A15"
-	entryTextColor = "#FFFFFF"
+	hoverColor = "#00FFFF"
+	unhoverColor = "#181A15"
 
 	def __init__(self,parent):
 		# Initialize a Frame to group the InputFile Widgets together
 		tk.Frame.__init__(self, parent)
+		self.state = 1								# STATE variable to track current STATE
+		self.oldDeviceList = ""
+		self.newDeviceList = ""
+		self.usbIdValue = ""
 
-		# MODE 1 = ENCRYPT, MODE 0 = DECRYPT
-		self.Mode = 1
+		# Create a pseudo Button
+		self.statusLabel = tk.Label(self, text="Nothing",bg="#FF0000")
+		self.statusImage = tk.Label(self, text="NOT REGISTERED\n",bg="#FF0000")
+		self.button = tk.Label(self,text=" + ",bg=USBWidget.unhoverColor)
 
-		# Initialize button icons
-		self.hoverToggleImage   = tk.PhotoImage(file="selectFile_hover.png")
-		self.unhoverToggleImage = tk.PhotoImage(file="selectFile_unhover.png")
-		self.hoverStartImage0    = tk.PhotoImage(file="selectFile_hover.png")
-		self.unhoverStartImage0  = tk.PhotoImage(file="selectFile_unhover.png")
-		self.hoverStartImage1    = tk.PhotoImage(file="selectFile_hover.png")
-		self.unhoverStartImage1  = tk.PhotoImage(file="selectFile_unhover.png")
+		# Pack the widgets into the Frame
+		self.button.grid(row=1,column=1)
+		self.statusLabel.grid(row=0,column=0) 
+		self.statusImage.grid(row=1,rowspan=2,column=0)  
+		self.enable()
 
-		# Create an EntryField & Label (pseudoButton) Widget
-		self.toggleButton = tk.Label(self,image=self.hoverToggleImage1,borderwidth=0)
-		self.startButton  = tk.Label(self,image=self.hoverStartImage1,borderwidth=0)
-
-		# Pack the 2 Widgets into a frame
-		self.entryField.pack(side=LEFT)
-		self.inputFileButton.pack(side=RIGHT)
-
-		# Define events for the ToggleButton
-		def hoverToggleButton(event):
-			event.widget.config(image=self.hoverImage)
-		def unhoverToggleButton(event):
-			event.widget.config(image=self.unhoverImage)
-		def clickToggleButton(event):
-			if self.mode == 1:
-				self.mode == 0
-				self.startButton.config(image=self.hoverToggleImage0)
-			else:
-				self.mode == 1
-				self.startButton.config(image=self.hoverToggleImage1)
-
-		# Define events for the StartButton
-		def hoverStartButton(event):
-			if self.mode == 1:	event.widget.config(image=self.hoverImage1)
-			else:				event.widget.config(image=self.hoverImage0)
-		def unhoverStartButton(event):
-			if self.mode == 1:	event.widget.config(image=self.unhoverImage1)
-			else:				event.widget.config(image=self.unhoverImage0)
-		def clickStartButton(event):
-			print("START!!")
-
-		# Bind the events to the pseudoButton
-		self.toggleButton.bind("<Enter>", hoverToggleButton)
-		self.toggleButton.bind("<Leave>", unhoverToggleButton)
-		self.toggleButton.bind("<Button-1>", clickToggleButton)
-		self.startButton.bind("<Enter>", hoverStartButton)
-		self.startButton.bind("<Leave>", unhoverStartButton)
-		self.startButton.bind("<Button-1>", clickStartButton)
-
+	# Method for disabling widget
 	def disable(self):
-		self.toggleButton.config(state = tk.DISABLED)
-		self.startButton.config(state = tk.DISABLED)
-		# disable bg color...
+		# Disable + unbind events to sub-widgets
+		self.button.unbind("<Enter>")
+		self.button.unbind("<Leave>")
+		self.button.unbind("<Button-1>")
+		self.button.config(bg=USBWidget.unhoverColor)
+	# Method for enabling widget		
+	def enable(self):
+		# Define events for the pseudoButton
+		def hoverButton(event):		event.widget.config(bg=USBWidget.hoverColor)
+		def unhoverButton(event):	event.widget.config(bg=USBWidget.unhoverColor)
+		# 
+		def clickButton(event):
+			if (self.state==1) or (self.state==3):
+				self.oldDeviceList = usb.getDeviceIDList()
+				self.statusLabel.config(text="Insert USB device & click \u2714")
+				self.statusImage.config(text="REGISTERING\n",bg="#FFFF00")
+				self.button.config(text=" \u2714 ")
+				self.state = 2
+				return
+			else:
+				self.newDeviceList = usb.getDeviceIDList()
+				tmpDeviceString = usb.getNewDeviceID(self.oldDeviceList,self.newDeviceList)
+				if tmpDeviceString != "ERROR":
+					self.usbIdValue = usb.extractID(tmpDeviceString)
+					self.statusLabel.config(text="SUCCESS!")
+					self.statusImage.config(text="REGISTERED\n",bg="#00FF00")
+					self.button.config(text=" + ")
+					self.state = 3
+				else:
+					self.statusLabel.config(text="[FAILED] Remove USB device & try again...")
+					self.statusImage.config(text="NOT REGISTERED\n",bg="#FF0000")
+					self.button.config(text=" + ")
+					self.state = 1
 
+		# Enable + bind events to sub-widgets
+		self.button.bind("<Enter>", hoverButton)
+		self.button.bind("<Leave>", unhoverButton)
+		self.button.bind("<Button-1>", clickButton )
+	# Method to retrieve value contained EntryField
+	def getValue(self):
+		return self.usbIdValue
+# class StartWidget(tk.Frame):
 		
 #*******************************************************************************
 # TestBench...
