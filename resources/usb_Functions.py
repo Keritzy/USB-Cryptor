@@ -12,7 +12,6 @@
 # 3. Implement an algorithm to compare & find the new device ID (using the lists made in step 2)
 # 4. Once ID is found, use another algorithm to extract the VID & PID (HEX)
 #----------------------------------------------------------------------
-
 import win32com.client
 
 #**********************************************************************
@@ -33,9 +32,9 @@ def getDeviceIDList():
 	for usb in wmi.InstancesOf ("Win32_USBHub"):
 		device_list.append( str(usb.DeviceID) ) # Creates the list
 
-	# Prints the list out (for Debugging purposes)
-	for i in range( len(device_list) ):
-		print(device_list[i])
+	# # Prints the list out (for Debugging purposes)
+	# for i in range( len(device_list) ):
+	# 	print(device_list[i])
 
 	return device_list
 
@@ -47,8 +46,9 @@ def getDeviceIDList():
 # oldList - list of USB data prior to insertion of the USB device
 # newList - list of USB data after the insertion of the USB device
 #----------------------------------------------------------------------
-# RETURN:   
-# -1 		=> if there's anything other than 1 new entry being detected
+# RETURN: 
+#  0 		=> no new entry being detected
+# -1 		=> more than 1 new entry being detected
 # device_ID => difference between the 2 input lists (i.e data string of the new USB device)
 #**********************************************************************
 def getNewDeviceID(oldList, newList):
@@ -60,8 +60,10 @@ def getNewDeviceID(oldList, newList):
 	# Check to ensure there's only 1 new USB device ID
 	if not( newListCount > oldListCount ):
 		print("Error: no new USB devices were detected...")
+		return "ERROR"
 	elif( newListCount != oldListCount+1 ):
 		print("Error: More than 1 new USB devices were detected...")
+		return "ERROR"
 	else:
 		# Do a comparison betw. the lists to find the new USB device ID
 		for i in range(newListCount):
@@ -76,56 +78,54 @@ def getNewDeviceID(oldList, newList):
 			# If there wasn't any match, it means new_ID_string[i] is the new device ID!
 			if IDmatch == 0:
 				device_ID = newList[i]
-				print("New ID is:"+device_ID)
+				# print("New ID is:"+device_ID)
 				return device_ID
-	
-	return -1
+
 
 #**********************************************************************
 # extractID
 #   - Compares the difference between the 2 input lists & returns it
 #----------------------------------------------------------------------
 # PARAM:
-# id_string - string to extract values from
-# tag - indicates the 4-digit HEX-value to extract (VID or PID) 
+# id_string - string to extract VID, PID values from
 #----------------------------------------------------------------------
 # RETURN:   
-# tag_value => extracted value of the tag 
-#			   (haven't decide what format I would want to play with)
+# idValue => extracted string ( VID+PID)
 #**********************************************************************
-def extractID(id_string,tag):
+def extractID(id_string):
 
-	# eg. of ID = "USB\VID_XXXX&PID_YYYY\ZZZZZZ...."
-	# .find gives us index of "V" of VID or "P" of PID
-	index = id_string.find(tag)
-	# +4 & +8 to get index of the 4th & 1st digit respectively
-	tag_value = id_string[(index+4):(index+8)]
-	print(tag_value)
-	# Converts string representing base-16 integer -> decimal integer -> hex integer
-	tag_value = hex(int(tag_value,16))
-
-	return tag_value
+	# eg. ID = "USB\VID_XXXX&PID_YYYY\ZZZZZZ...."
+	if( ("VID" in id_string) and ("VID" in id_string) ):
+		index = id_string.find("V")					# .find gives us index of "V" of VID
+		idValue = id_string[(index+4):(index+8)]		# +4 & +8 to get index of the 4th & 1st digit respectively
+		index = id_string.find("PID")					# .find gives us index of "P" of PID
+		idValue += id_string[(index+4):(index+8)]		# appends PID to string containing the VID
+	else:
+		print("Not compatible USB device, ", end="")
+		return -1
+	
+	return idValue
 
 #**********************************************************************
 # TESTBENCH
 #**********************************************************************
 if __name__ == '__main__':
 
-	# oldList = getDeviceIDList()
-	# input("Insert the USB Device")
-	# newList = getDeviceIDList()
-	# USB_string = getNewDeviceID(oldList,newList)
+	# Test whole sequence
+	print( "Test whole sequence:\n-----------------------------------")
+	oldList = getDeviceIDList()
+	input("Insert the USB Device & press ENTER")
+	newList = getDeviceIDList()
+	USB_string = getNewDeviceID(oldList,newList)
+	if USB_string != "ERROR":
+		print( extractID(USB_string) )
+	else:
+		print( "test failed, aborting...")
 
-	# if USB_string != -1:
-	# 	input("extracting ID...")
-	# 	extractID(USB_string,"PID")
-	# 	extractID(USB_string,"VID")
+	# Test string check
+	print( "\nTest string check:\n-----------------------------------")
+	print( extractID("USB\VID_054C&PID_09C2\124861258912521") ) # Correct Format
+	print( extractID("USB\VI521") ) # Wrong format
 
-	USB_string = "USB\VID_054C&PID_09C2\124861258912521"
-	if USB_string != -1:
-		input("extracting ID...")
-		extractID(USB_string,"PID")
-		extractID(USB_string,"VID")
-
-	input("Done")
+	input("\n\nTest Complete!!")
 
