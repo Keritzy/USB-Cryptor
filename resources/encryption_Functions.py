@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+from tkinter import filedialog
 #----------------------------------------------------------------------
 # Main Objective:
 # Implement an algorithm to encrypt a textfile using a key & a USB device's VID, PID
@@ -97,7 +97,7 @@ def decryptThisString( inputString, keyCode ):
 		originalStringLength = int( inputString[2:4] )
 		tmp_string = inputString[4:originalStringLength+4]
 	else:
-		tmp_string = inputString
+		tmp_string = inputString[4:(len(inputString)-1)]
 
 	# Forces the input strings to be in ASCII-byte format instead of unicode
 	# BYTE format required to carry out the decryption operation
@@ -131,6 +131,43 @@ def decryptThisString( inputString, keyCode ):
 	return decryptedString
 
 #**********************************************************************
+# mainSequence
+#   - reads the OriginFile & writes the encrypted/decrypted results into the DestinationFile  
+#----------------------------------------------------------------------
+# PARAM:
+# keyCode - a string made up of the VID + PID + KEY
+# OriginFileName - Name of file to READ
+# DestinationFileName - Name of file to WRITE
+# mode - (1) = encryption & (2) = decryption
+#**********************************************************************
+def mainSequence( keyCode, OriginFileName, mode ):
+
+	# Open the files for READING & WRITING
+	OriginFile = open(OriginFileName,'r')
+	# DestinationFile = open(DestinationFileName,'w') 
+	DestinationFile = filedialog.asksaveasfile(filetypes=[ ('Text Files','*.txt') ], 
+			 								   title="Save file as...", defaultextension=".txt")
+
+	if mode==1:
+		while True:
+			tmpString = OriginFile.readline()
+			if tmpString=="":
+				break
+			processedString = encryptThisString(tmpString,keyCode)
+			DestinationFile.write(processedString)
+			DestinationFile.write("\n")
+	else:
+		while True:
+			tmpString = OriginFile.readline()
+			if tmpString=="":
+				break
+			processedString = decryptThisString(tmpString,keyCode)
+			DestinationFile.write(processedString)
+
+	OriginFile.close()
+	DestinationFile.close()
+
+#**********************************************************************
 # TESTBENCH
 #**********************************************************************
 if __name__ == '__main__':
@@ -138,29 +175,25 @@ if __name__ == '__main__':
 	VID = "0000"
 	PID = "1111"
 	KeyNumber = "123456"
-	sampleString = "This is just a test"
 	keyCode = VID + PID + KeyNumber 
 
-	print( "Sample String:")
-	print( sampleString )
-	print( "")
-	encryptedString = encryptThisString(sampleString,keyCode)
-	print( "Encrypted String:")
-	print( encryptedString )
-	print( "")
-	decryptedString = decryptThisString(encryptedString,keyCode)
-	print( "Decrypted String:")
-	print( decryptedString )
-	print( "")
+	# # Testing encryptThisString() & decryptThisString() functions
+	# sampleString = "This is just a test"
+
+	# print( "Sample String:")
+	# print( sampleString )
+	# print( "")
+	# encryptedString = encryptThisString(sampleString,keyCode)
+	# print( "Encrypted String:")
+	# print( encryptedString )
+	# print( "")
+	# decryptedString = decryptThisString(encryptedString,keyCode)
+	# print( "Decrypted String:")
+	# print( decryptedString )
+	# print( "")
+
+	# Testing entire encryption/decryption sequence
+	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/out.txt", 1 )
+	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/EncryptedFile.txt", 2 )
 
 	input("<<--End of Test-->>")
-
-# #****************************************************
-# # Used for debugging the decrypt & encrypt algorithm
-# #****************************************************
-# print(tmp_ASCII_value, end="")
-# print("=", end="")
-# print( inputString[i], end="")
-# print("+", end="")
-# print( keyCode[j], end="")
-# print(" --> ", end="")
