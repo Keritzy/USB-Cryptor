@@ -17,31 +17,12 @@ import usb_Functions as usb
 # modern & non-native...
 #----------------------------------------------------------------------
 
-#----------------------------------------------------------------------
-# Approach :
-# - Decided to just stick w/ Tkinter as the GUI framework for this project >_<
-# - The UI will be really simple & straight forward to use (refer to mockup!)
-# -> [CLASS] InputFileWidget: 
-# 		- filename entry field
-# 		- icon beside the entry field to open the fileDialog window
-# -> [CLASS] KeyWidget
-# 		- Customized image label "KEY"
-# 		- KEY value entry field 
-# -> [CLASS] USBWidget
-# 		1. Obtain inital list of USB VID PID 
-# 		2. Prompt user to insert USB device (via msgBox)
-# 		3. Obtain final list of USB VID PID 
-# -> [CLASS] StartWidget
-# 		- Button to execute the entire programming sequence (spawn a new thread for task)
-# 		- Button to toggle between the 2 modes (change the icon & binding of the other button)
-#----------------------------------------------------------------------
-
 #**********************************************************************
-# [CLASS] InputFileWidget:
+# [CLASS] FileInputWidget:
 # 	- (Entry) entryField for file directory
 # 	- (Label) inputFileButton to open the fileDialog window
 #**********************************************************************
-class InputFileWidget(tk.Frame):
+class FileInputWidget(tk.Frame):
 	# Configure Text & Cursor Color [Class Variable]
 	entryBgColor = "#181A15"
 	entryTextColor = "#FFFFFF"
@@ -54,8 +35,8 @@ class InputFileWidget(tk.Frame):
 		self.ButtonImage = tk.PhotoImage(file="selectFile.png")
 
 		# Create an EntryField & Label (pseudoButton) Widget
-		self.entryField = tk.Entry(self,font="Verdana 13",width=55,bg=InputFileWidget.entryBgColor,fg=InputFileWidget.entryTextColor,
-										insertbackground=InputFileWidget.entryTextColor,highlightthickness=0,borderwidth=0)
+		self.entryField = tk.Entry(self,font="Verdana 13",width=55,bg=FileInputWidget.entryBgColor,fg=FileInputWidget.entryTextColor,
+										insertbackground=FileInputWidget.entryTextColor,highlightthickness=0,borderwidth=0)
 		self.inputFileButton = tk.Label(self,image=self.ButtonImage,borderwidth=0,bg="#181A15")
 
 		# Pack the 2 Widgets into a frame
@@ -63,9 +44,10 @@ class InputFileWidget(tk.Frame):
 		self.inputFileButton.pack(side=RIGHT)
 		self.enable()
 	# Check if file can be opened
-	def checkFile(self):
+	def checkValue(self):
 		try:
-			filePointer = open(self.entryField.get(),'r')
+			tmp = self.entryField.get()
+			filePointer = open(tmp,'r')
 		except Exception:
 		    return -1                               	# returns "ERROR" to abort process...
 
@@ -90,7 +72,9 @@ class InputFileWidget(tk.Frame):
 		# Creates a windows dialog to get user to choose a file to encrypt/decrypt
 		def clickButton(event):		
 			file_path = filedialog.askopenfilename(filetypes=[ ('Text Files','*.txt') ], title="Select a file to encrypt/decrypt" )
-			self.entryField.insert(0,file_path)
+			if file_path!="":
+				self.entryField.delete(0,END)
+				self.entryField.insert(0,file_path)
 		# Enable + bind events to sub-widgets
 		self.entryField.config(state = tk.NORMAL)
 		self.inputFileButton.config(state = tk.NORMAL)
@@ -98,14 +82,14 @@ class InputFileWidget(tk.Frame):
 		self.inputFileButton.bind("<Leave>", unhoverButton)
 		self.inputFileButton.bind("<Button-1>", clickButton )
 #**********************************************************************
-# [CLASS] KeyWidget:
+# [CLASS] KeyInputWidget:
 # 	- (Entry) entryField for KEY
 #	  		  Auto-checks if the input value is in the right KEY format
 # 	- (Label) keyLabel for KEY icon for UI
 #	- (Label) statusLabel displays status messages/instructions
 #	- (Label) paddingLabel for padding LOL
 #**********************************************************************
-class KeyWidget(tk.Frame):
+class KeyInputWidget(tk.Frame):
 
 	# Configure Text & Cursor Color [Class Variable]
 	entryBgColor 		= "#181A15"
@@ -127,10 +111,10 @@ class KeyWidget(tk.Frame):
 		
 		# Create an EntryField & label (icon) Widget
 		self.keyLabel = tk.Label(self,image=self.keyImage,borderwidth=0)
-		self.entryField = tk.Entry(self,textvariable=self.keyValue,font="Verdana 13",width=10,bg=KeyWidget.entryBgColor,fg=KeyWidget.entryTextColor,
-									insertbackground=KeyWidget.entryTextColor,highlightthickness=0,borderwidth=0,show=KeyWidget.bullet)
+		self.entryField = tk.Entry(self,textvariable=self.keyValue,font="Verdana 13",width=10,bg=KeyInputWidget.entryBgColor,fg=KeyInputWidget.entryTextColor,
+									insertbackground=KeyInputWidget.entryTextColor,highlightthickness=0,borderwidth=0,show=KeyInputWidget.bullet)
 		self.bottomPadding = tk.Label(self,text="                         ",font="Verdana 13",bg="#272282",borderwidth=0,highlightthickness=0)
-		self.statusLabel = tk.Label(self,text="",font="Verdana 8",bg="#123456",fg=KeyWidget.entryTextColor, justify=LEFT,highlightthickness=0)		
+		self.statusLabel = tk.Label(self,text="",font="Verdana 8",bg="#123456",fg=KeyInputWidget.entryTextColor, justify=LEFT,highlightthickness=0)		
 
 		self.statusLabel.grid(row=0,column=1,columnspan=2,sticky=W,pady=3)
 		self.keyLabel.grid(row=1,column=0)
@@ -152,10 +136,13 @@ class KeyWidget(tk.Frame):
 
 		if (tmp_string).isdigit() or tmp_string == "":
 			self.statusLabel.config(text="")
-			self.entryField.config(bg=KeyWidget.entryBgColor)
+			self.entryField.config(bg=KeyInputWidget.entryBgColor)
 		else:
 			self.statusLabel.config(text="Only numeric characters are allowed!")
-			self.entryField.config(bg=KeyWidget.entryBgErrorColor)
+			self.entryField.config(bg=KeyInputWidget.entryBgErrorColor)
+	def checkValue(self):
+		if len(self.keyValue.get())==8 and (self.keyValue.get()).isdigit():	return 0
+		else:							 									return -1
 	# Method to retrieve value contained EntryField
 	def getValue(self):
 		return self.entryField.get()
@@ -166,12 +153,12 @@ class KeyWidget(tk.Frame):
 	def enable(self):
 		self.entryField.config(state = tk.NORMAL)
 #**********************************************************************
-# [CLASS] USBWidget:
+# [CLASS] RegisterUsbWidget:
 # 	- (Label) statusLabel displays status messages/instructions
 #	- (Label) statusLabel to contain Image for UI
 #	- (Label) button for registering USB device
 #**********************************************************************
-class USBWidget(tk.Frame):
+class RegisterUsbWidget(tk.Frame):
 
 	hoverColor = "#00FFFF"
 	unhoverColor = "#181A15"
@@ -187,7 +174,7 @@ class USBWidget(tk.Frame):
 		# Create a pseudo Button
 		self.statusLabel = tk.Label(self, text="Nothing",bg="#FF0000")
 		self.statusImage = tk.Label(self, text="NOT REGISTERED\n",bg="#FF0000")
-		self.button = tk.Label(self,text=" + ",bg=USBWidget.unhoverColor)
+		self.button = tk.Label(self,text=" + ",bg=RegisterUsbWidget.unhoverColor)
 
 		# Pack the widgets into the Frame
 		self.button.grid(row=1,column=1)
@@ -201,12 +188,12 @@ class USBWidget(tk.Frame):
 		self.button.unbind("<Enter>")
 		self.button.unbind("<Leave>")
 		self.button.unbind("<Button-1>")
-		self.button.config(bg=USBWidget.unhoverColor)
+		self.button.config(bg=RegisterUsbWidget.unhoverColor)
 	# Method for enabling widget		
 	def enable(self):
 		# Define events for the pseudoButton
-		def hoverButton(event):		event.widget.config(bg=USBWidget.hoverColor)
-		def unhoverButton(event):	event.widget.config(bg=USBWidget.unhoverColor)
+		def hoverButton(event):		event.widget.config(bg=RegisterUsbWidget.hoverColor)
+		def unhoverButton(event):	event.widget.config(bg=RegisterUsbWidget.unhoverColor)
 		# 
 		def clickButton(event):
 			if (self.state==1) or (self.state==3):
@@ -238,7 +225,104 @@ class USBWidget(tk.Frame):
 	# Method to retrieve value contained EntryField
 	def getValue(self):
 		return self.usbIdValue
-# class StartWidget(tk.Frame):
+	def checkValue(self):
+		if self.state==3:	return 0
+		else: 				return -1
+#**********************************************************************
+# [CLASS] StartProgramWidget:
+# 	- (Label) toggleButton to toggle between encryption/decryption mode
+#	- (Label) startButton to execute encrypt/decrypt sequence
+#**********************************************************************
+class StartProgramWidget(tk.Frame):
+
+	hoverColor = "#FF0000"
+	unhoverColor = "#181A15"
+
+	def __init__(self,parent,FileInputObject,KeyInputObject,RegisterUsbObject):
+		# Initialize a Frame to group the InputFile Widgets together
+		tk.Frame.__init__(self, parent)
+		self.state = 1								# STATE variable to track current STATE
+		self.FileInputObject   = FileInputObject
+		self.KeyInputObject    = KeyInputObject
+		self.RegisterUsbObject = RegisterUsbObject
+
+		# Create a pseudo Button
+		self.toggleButton = tk.Label(self, text="Toggle",bg="#FFFFFF",fg="#FFFFFF")
+		self.startButton  = tk.Label(self, text="ENCRYPT\n",bg="#00FFFF",fg="#FFFFFF")
+
+		# Pack the widgets into the Frame
+		self.toggleButton.grid(row=0,column=0)
+		self.startButton.grid(row=0,column=1)
+		self.enable()
+
+	# Method for disabling widget
+	def disable(self):
+		# Disable + unbind events to sub-widgets
+		self.toggleButton.unbind("<Enter>")
+		self.toggleButton.unbind("<Leave>")
+		self.toggleButton.unbind("<Button-1>")
+		self.startButton.unbind("<Enter>")
+		self.startButton.unbind("<Leave>")
+		self.startButton.unbind("<Button-1>")
+		# Change set background back to non-hover color
+		self.toggleButton.config(bg=StartProgramWidget.unhoverColor)
+		self.startButton.config(bg=StartProgramWidget.unhoverColor)
+	# Method for enabling widget		
+	def enable(self):
+		# Define events for the pseudoButton
+		def hoverButton(event):		event.widget.config(bg=StartProgramWidget.hoverColor)
+		def unhoverButton(event):	event.widget.config(bg=StartProgramWidget.unhoverColor)
+		def clickToggleButton(event):
+			if self.state==1:
+				self.state=2
+				self.startButton.config(text="DECRYPT\n",bg="#00FF00")
+			else:
+				self.state=1
+				self.startButton.config(text="ENCRYPT\n",bg="#00FFFF")
+
+		def clickStartButton(event):
+			# Series of checks before executing the encryption/decryption sequence
+			if self.FileInputObject.checkValue() == -1:
+				print( "INVALID FILE")
+				return
+
+			if self.KeyInputObject.checkValue() == -1:
+				print( "INVALID KEY")
+				return
+
+			if self.RegisterUsbObject.checkValue() == -1:
+				print( "INVALID USB")
+				return
+
+			# Lock in values before executing the encryption/decryption sequence
+			originFileName = self.FileInputObject.getValue()		
+			KeyString 	 = self.KeyInputObject.getValue()
+			UsbString 	 = self.RegisterUsbObject.getValue()
+
+			# Generate Master KEY for ENCRYPTION/DECRYPTION
+			keyCode = UsbString+KeyString
+
+			# Creates an empty .txt file with the chosen destinationFileName
+			# destinationFileName = filedialog.asksaveasfile(filetypes=[ ('Text Files','*.txt') ], 
+			#  												title="Select a file to encrypt/decrypt", defaultextension=".txt")
+			
+			# Crude method to convert the return value from the fileDialog into a string
+			# tmpEntryField = tk.Entry(self)
+			# tmpEntryField.insert(0,destinationFileName)
+			# destinationFileName = tmpEntryField.get()
+
+			# Check whether it's an encryption or a decryption sequence
+			# ENCRYPT(self.state==1) & DECRYPT(self.state==2)
+			encrypt.mainSequence(keyCode,originFileName,self.state)
+			print("everythingDONE")
+
+		# Enable + bind events to sub-widgets
+		self.toggleButton.bind("<Enter>",hoverButton)
+		self.toggleButton.bind("<Leave>",unhoverButton)
+		self.toggleButton.bind("<Button-1>",clickToggleButton)
+		self.startButton.bind("<Enter>",hoverButton)
+		self.startButton.bind("<Leave>",unhoverButton)
+		self.startButton.bind("<Button-1>",clickStartButton)
 		
 #*******************************************************************************
 # TestBench...
@@ -248,9 +332,13 @@ if __name__ == "__main__":
 	root = tk.Tk()                            		#Create app
 	root.geometry( "800x400" )						# Set dimensions in pixels
 	root.config( bg="#272822")
-	EntryWidget = InputFileWidget(root)
-	KeyingWidget = KeyWidget(root)
-	EntryWidget.place(x=70,y=200)
-	KeyingWidget.place(x=70,y=250)
+	A = FileInputWidget(root)
+	B = KeyInputWidget(root)
+	C = RegisterUsbWidget(root)
+	D = StartProgramWidget(root,A,B,C)
+	A.place(x=70,y=200)
+	B.place(x=70,y=225)
+	C.place(x=70,y=280)
+	D.place(x=600,y=250)
 	root.mainloop()
 
