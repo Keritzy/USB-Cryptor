@@ -5,11 +5,14 @@ from tkinter import filedialog
 
 import threading
 
-import encryption_Functions as encrypt
-import usb_Functions as usb
-
-# import resources.encryption_Functions as encrypt
-# import resources.usb_Functions as usb
+try:
+	# for main.py
+	import resources.encryption_Functions as encrypt
+	import resources.usb_Functions as usb
+except ImportError:
+	# for local testbench
+	import encryption_Functions as encrypt
+	import usb_Functions as usb
 
 #----------------------------------------------------------------------
 # Main Objective:
@@ -112,7 +115,7 @@ class KeyInputWidget(tk.Frame):
 		# Create an EntryField & label (icon) Widget
 		self.keyLabel = tk.Label(self,image=self.keyImage,borderwidth=0)
 		self.entryField = tk.Entry(self,textvariable=self.keyValue,font="Verdana 13",width=10,bg=KeyInputWidget.entryBgColor,fg=KeyInputWidget.entryTextColor,
-									insertbackground=KeyInputWidget.entryTextColor,highlightthickness=0,borderwidth=0,show=KeyInputWidget.bullet)
+									insertbackground=KeyInputWidget.entryTextColor,highlightthickness=0,borderwidth=0,show=KeyInputWidget.bullet,justify=CENTER)
 		self.bottomPadding = tk.Label(self,text="                         ",font="Verdana 13",bg="#272282",borderwidth=0,highlightthickness=0)
 		self.statusLabel = tk.Label(self,text="",font="Verdana 8",bg="#123456",fg=KeyInputWidget.entryTextColor, justify=LEFT,highlightthickness=0)		
 
@@ -323,14 +326,15 @@ class StartProgramWidget(tk.Frame):
 		self.startButton.bind("<Enter>",hoverButton)
 		self.startButton.bind("<Leave>",unhoverButton)
 		self.startButton.bind("<Button-1>",clickStartButton)
-		
+
+
 #*******************************************************************************
 # TestBench...
 #*******************************************************************************
 if __name__ == "__main__":
 
 	root = tk.Tk()                            		#Create app
-	root.geometry( "800x400" )						# Set dimensions in pixels
+	root.geometry( "800x600" )						# Set dimensions in pixels
 	root.config( bg="#272822")
 	A = FileInputWidget(root)
 	B = KeyInputWidget(root)
