@@ -33,17 +33,18 @@ def encryptThisString( inputString, keyCode ):
 
 	# Adds 4 chars @ the front of the string to identify the class of the original string
 	# Class 1 --> string that has < 100 chars
-	#		  --> 4 char format = ">>XX", where XX is the length of the original string
+	#		  --> 4 char format = ">>XXXX", where XXXX is the char length of the original string
 	# Class 2 --> string that has >= 100 chars
-	#		  --> 4 char format = "????"
+	#		  --> 4 char format = "??XXXX", where XXXX is the char length of the original string
 	encryptedString = ""
-	if len(inputString) <= 10:		encryptedString = ">>0" + str(len(inputString))
-	elif len(inputString) <= 100:	encryptedString = ">>" + str(len(inputString))
-	else:							encryptedString = "????"
+	if len(inputString) <= 10:		encryptedString = ">>000" + str(len(inputString))
+	elif len(inputString) <= 100:	encryptedString = ">>00"  + str(len(inputString))
+	elif len(inputString) <= 1000:	encryptedString = "??0"   + str(len(inputString))
+	else:							encryptedString = "??"    + str(len(inputString))    
 
 	# Append the string-to-be-encrypted w/ "!@#$%^&*()" until its length > 100
-	while len(inputString) < 100:
-		inputString = inputString + "!@#$%^&*()"
+	# while len(inputString) < 100:
+	# 	inputString = inputString + "!@#$%^&*()"
 
 	# Forces the input strings to be in ASCII-byte format instead of unicode
 	# BYTE format required to carry out the encryption operation
@@ -92,26 +93,26 @@ def decryptThisString( inputString, keyCode ):
 
 	decryptedString = ""
 
-	# Identifies the class of the original string by extracting the first 4 chars
-	if ">>" in inputString:
-		originalStringLength = int( inputString[2:4] )
-		tmp_string = inputString[4:originalStringLength+4]
-	else:
-		tmp_string = inputString[4:(len(inputString)-1)]
+	# # Identifies the class of the original string by extracting the first 6 chars
+	# if ">>" in inputString:
+	# 	originalStringLength = int( inputString[2:6] )
+	# 	tmp_string = inputString[6:originalStringLength+6]
+	# else:
+	# 	tmp_string = inputString[6:(len(inputString)-1)]
 
 	# Forces the input strings to be in ASCII-byte format instead of unicode
 	# BYTE format required to carry out the decryption operation
-	tmp_string = tmp_string.encode('ascii', 'ignore')
+	inputString = inputString.encode('ascii', 'ignore')
 	keyCode = keyCode.encode('ascii', 'ignore')
 
 	#****************************************************
 	# Decryption Algorithm
 	#****************************************************
 	j = 0							
-	for i in range( len(tmp_string) ):
+	for i in range( len(inputString) ):
 
 		# Decrypts by reversing what was done in the encryption function
-		tmp_ASCII_value = tmp_string[i] - keyCode[j]
+		tmp_ASCII_value = inputString[i] - keyCode[j]
 
 		# If the values exceed the ASCII range of 0~127, make it overflow/underflow
 		if tmp_ASCII_value < 0:
@@ -155,13 +156,18 @@ def mainSequence( keyCode, OriginFileName, mode ):
 				break
 			processedString = encryptThisString(tmpString,keyCode)
 			DestinationFile.write(processedString)
-			DestinationFile.write("\n")
+			#DestinationFile.write("\n")
 	else:
 		while True:
-			tmpString = OriginFile.readline()
-			if tmpString=="":
+			# Identifies the class of the original string by extracting the first 6 bytes
+			readString =  OriginFile.read(6)
+			if readString=="":
 				break
-			processedString = decryptThisString(tmpString,keyCode)
+			# print(readString+"|____|", end="")
+			originalStringLength = int( readString[2:6] )
+			# print(originalStringLength)
+			actualString = OriginFile.read(originalStringLength)
+			processedString = decryptThisString(actualString,keyCode)
 			DestinationFile.write(processedString)
 
 	OriginFile.close()
@@ -193,7 +199,7 @@ if __name__ == '__main__':
 	# print( "")
 
 	# Testing entire encryption/decryption sequence
-	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/out.txt", 1 )
-	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/EncryptedFile.txt", 2 )
+	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/Sample.txt", 1 )
+	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/Sample_Encrypted.txt", 2 )
 
 	input("<<--End of Test-->>")
