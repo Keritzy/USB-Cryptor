@@ -1,0 +1,27 @@
+-----------------------------------------------------------------
+Cryptography 101
+-----------------------------------------------------------------
+CIPHER = algorithm used for encryption
+ENCRYPTION = process of obfuscating information/data
+
+-----------------------------------------------------------------
+USB_CRYPTOR v1.1 Changelog
+-----------------------------------------------------------------
+
+*New Features*
+- Displays "NOT READY" image if hovering over ENCRYPT/DECRYPT button & (USB+KEY+InputFile) are not ready
+
+*Bug Fix*
+- Exception occurs upon clicking on "CANCEL" during asksaveasfile fileDialog
+
+-----------------------------------------------------------------
+TO DO LIST
+-----------------------------------------------------------------
+- Status Label above the ENCRYPT/DECRYPT button that displays msg if:
+	- encryption/decryption process is completed
+	- InputFile for decryption isn't a proper encrypted file from the program
+
+- Change how the cipher works (make KEY & USB VID_PID dependent on each other)
+	- maybe consider "Public-Key Cryptography"?
+
+- Convert into .exe for distribution + Icon for .exe

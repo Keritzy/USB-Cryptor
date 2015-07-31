@@ -265,6 +265,7 @@ class StartProgramWidget(tk.Frame,Color):
 		self.toggleDecryptImage = tk.PhotoImage(file="resources/images/StartProgram_ToggleDecrypt.png")
 		self.encryptImage = tk.PhotoImage(file="resources/images/StartProgram_Encrypt.png")
 		self.decryptImage = tk.PhotoImage(file="resources/images/StartProgram_Decrypt.png")
+		self.notReadyImage = tk.PhotoImage(file="resources/images/StartProgram_NotReady.png")
 
 		# Create a pseudo Button
 		self.toggleButton = tk.Label(self,image=self.toggleEncryptImage,bg=Color.grey,borderwidth=0)
@@ -285,8 +286,14 @@ class StartProgramWidget(tk.Frame,Color):
 		 	   self.RegisterUsbObject.checkValue() == 0):
 				self.startButton.config(bg=Color.green)
 			else:
+				self.startButton.config(bg=Color.red, image=self.notReadyImage)
 				self.startButton.config(bg=Color.red)
-		def unhoverButton(event):		event.widget.config(bg=Color.entryBg)
+		def unhoverButton(event):		
+			event.widget.config(bg=Color.entryBg)
+			if self.state==1:
+				self.startButton.config(image=self.encryptImage)
+			else:
+				self.startButton.config(image=self.decryptImage)
 		def hoverToggleButton(event):	event.widget.config(bg=Color.skyblue)
 		def unhoverToggleButton(event):	event.widget.config(bg=Color.grey)
 		def clickToggleButton(event):
@@ -312,7 +319,16 @@ class StartProgramWidget(tk.Frame,Color):
 
 			# Generate Master KEY for ENCRYPTION/DECRYPTION
 			keyCode = UsbString+KeyString
-			encrypt.mainSequence(keyCode,originFileName,self.state)
+
+			# Retrieve destination fileName & try if we can open the file
+			destinationFileName = filedialog.asksaveasfilename(filetypes=[ ('Text Files','*.txt') ], 
+			 								   title="Save file as...", defaultextension=".txt")
+			try:				filePointer = open(destinationFileName,'w')
+			except Exception:   return
+
+			# If file seems alright, we execute the main sequence
+			filePointer.close()
+			encrypt.mainSequence(keyCode,originFileName,destinationFileName,self.state)
 
 		# Enable + bind events to sub-widgets
 		self.toggleButton.bind("<Enter>",hoverToggleButton)

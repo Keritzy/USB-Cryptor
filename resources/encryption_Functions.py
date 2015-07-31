@@ -141,13 +141,12 @@ def decryptThisString( inputString, keyCode ):
 # DestinationFileName - Name of file to WRITE
 # mode - (1) = encryption & (2) = decryption
 #**********************************************************************
-def mainSequence( keyCode, OriginFileName, mode ):
+def mainSequence( keyCode, OriginFileName, DestinationFileName, mode ):
 
+	print("enter ffunction success!!")
 	# Open the files for READING & WRITING
 	OriginFile = open(OriginFileName,'r')
-	# DestinationFile = open(DestinationFileName,'w') 
-	DestinationFile = filedialog.asksaveasfile(filetypes=[ ('Text Files','*.txt') ], 
-			 								   title="Save file as...", defaultextension=".txt")
+	DestinationFile = open(DestinationFileName,'w') 
 
 	if mode==1:
 		while True:
