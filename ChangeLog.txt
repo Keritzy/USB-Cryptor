@@ -1,13 +1,19 @@
 -----------------------------------------------------------------
-Cryptography 101
+USB_CRYPTOR v1.2 Changelog
 -----------------------------------------------------------------
-CIPHER = algorithm used for encryption
-ENCRYPTION = process of obfuscating information/data
+*New Features*
+- Status Label above the ENCRYPT/DECRYPT button that displays msg if:
+	- encryption/decryption process is completed
+	- InputFile for decryption isn't a proper encrypted file from the program
+	- Deletes the the output file generated from an invalid ENCRYPTED file
+- Changed how keyCode (used for ENCRYPTION) is being generated
+
+*Bug Fix*
+- Error occurs when input file to be DECRYPTED isn't in the right format...
 
 -----------------------------------------------------------------
 USB_CRYPTOR v1.1 Changelog
 -----------------------------------------------------------------
-
 *New Features*
 - Displays "NOT READY" image if hovering over ENCRYPT/DECRYPT button & (USB+KEY+InputFile) are not ready
 
@@ -17,11 +23,6 @@ USB_CRYPTOR v1.1 Changelog
 -----------------------------------------------------------------
 TO DO LIST
 -----------------------------------------------------------------
-- Status Label above the ENCRYPT/DECRYPT button that displays msg if:
-	- encryption/decryption process is completed
-	- InputFile for decryption isn't a proper encrypted file from the program
-
-- Change how the cipher works (make KEY & USB VID_PID dependent on each other)
-	- maybe consider "Public-Key Cryptography"?
-
-- Convert into .exe for distribution + Icon for .exe
+- Check for unicode & reject input file??
+- Icon for .exe
+- Convert into .exe for distribution

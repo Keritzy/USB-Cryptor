@@ -30,5 +30,5 @@ if __name__ == "__main__":
 	A.place(x=83,y=297)
 	B.place(x=83,y=330)
 	C.place(x=83,y=379)
-	D.place(x=486,y=354)
+	D.place(x=486,y=328)
 	root.mainloop()

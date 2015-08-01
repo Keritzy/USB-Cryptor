@@ -1,3 +1,49 @@
+# #**********************************************************************
+# # mainSequence
+# #   - reads the OriginFile & writes the encrypted/decrypted results into the DestinationFile  
+# #----------------------------------------------------------------------
+# # PARAM:
+# # keyCode - a string made up of the VID + PID + KEY
+# # OriginFileName - Name of file to READ
+# # DestinationFileName - Name of file to WRITE
+# # mode - (1) = encryption & (2) = decryption
+# #**********************************************************************
+# def mainSequence( keyCode, OriginFileName, DestinationFileName, mode ):
+
+# 	# Open the files for READING & WRITING
+# 	OriginFile = open(OriginFileName,'r')
+# 	DestinationFile = open(DestinationFileName,'w')
+# 	error_flag = 0 
+
+# 	# ENCRYPTION Sequence
+# 	if mode==1:
+# 		while True:
+# 			tmpString = OriginFile.readline()
+# 			if tmpString=="":
+# 				break
+# 			processedString = encryptThisString(tmpString,keyCode)
+# 			DestinationFile.write(processedString)
+# 	# DECRYPTION Sequence
+# 	else:
+# 		while True:
+# 			# Identifies the class of the original string by extracting the first 6 bytes
+# 			readString =  OriginFile.read(6)
+			
+# 			# Breaks loop when we're at EOF
+# 			if readString=="":	
+# 				break				
+
+# 			originalStringLength = int( readString[2:6] )
+# 			actualString = OriginFile.read(originalStringLength)
+# 			processedString = decryptThisString(actualString,keyCode)
+# 			DestinationFile.write(processedString)
+
+# 	OriginFile.close()
+# 	DestinationFile.close()
+
+# 	return error_flag
+
+
 #!/usr/bin/python
 from tkinter import filedialog
 #----------------------------------------------------------------------
@@ -37,14 +83,10 @@ def encryptThisString( inputString, keyCode ):
 	# Class 2 --> string that has >= 100 chars
 	#		  --> 4 char format = "??XXXX", where XXXX is the char length of the original string
 	encryptedString = ""
-	if len(inputString) <= 10:		encryptedString = ">>000" + str(len(inputString))
-	elif len(inputString) <= 100:	encryptedString = ">>00"  + str(len(inputString))
-	elif len(inputString) <= 1000:	encryptedString = "??0"   + str(len(inputString))
+	if len(inputString) < 10:		encryptedString = ">>000" + str(len(inputString))
+	elif len(inputString) < 100:	encryptedString = ">>00"  + str(len(inputString))
+	elif len(inputString) < 1000:	encryptedString = "??0"   + str(len(inputString))
 	else:							encryptedString = "??"    + str(len(inputString))    
-
-	# Append the string-to-be-encrypted w/ "!@#$%^&*()" until its length > 100
-	# while len(inputString) < 100:
-	# 	inputString = inputString + "!@#$%^&*()"
 
 	# Forces the input strings to be in ASCII-byte format instead of unicode
 	# BYTE format required to carry out the encryption operation
@@ -60,6 +102,12 @@ def encryptThisString( inputString, keyCode ):
 		
 		# Encryption is done by adding ASCII values of the respective chars in both strings
 		tmp_ASCII_value = inputString[i] + keyCode[j]
+		# print(inputString[i],end="")
+		# print("+",end="")
+		# print(keyCode[j],end="")
+		# print("=",end="")
+		# print(tmp_ASCII_value,end="")
+		# print("=>",end="")
 
 		# If the values exceed the ASCII range of 0~127, make it overflow/underflow
 		if tmp_ASCII_value < 0:
@@ -67,6 +115,7 @@ def encryptThisString( inputString, keyCode ):
 		elif tmp_ASCII_value > 127:
 			tmp_ASCII_value = tmp_ASCII_value - 127
 
+		#print(tmp_ASCII_value)
 		# Append the encrypted char to the rest of the encryptedString
 		encryptedString = encryptedString + chr(tmp_ASCII_value)
 		
@@ -104,7 +153,6 @@ def decryptThisString( inputString, keyCode ):
 	# BYTE format required to carry out the decryption operation
 	inputString = inputString.encode('ascii', 'ignore')
 	keyCode = keyCode.encode('ascii', 'ignore')
-
 	#****************************************************
 	# Decryption Algorithm
 	#****************************************************
@@ -113,6 +161,12 @@ def decryptThisString( inputString, keyCode ):
 
 		# Decrypts by reversing what was done in the encryption function
 		tmp_ASCII_value = inputString[i] - keyCode[j]
+		# print(inputString[i],end="")
+		# print("-",end="")
+		# print(keyCode[j],end="")
+		# print("=",end="")
+		# print(tmp_ASCII_value,end="")
+		# print("=>",end="")
 
 		# If the values exceed the ASCII range of 0~127, make it overflow/underflow
 		if tmp_ASCII_value < 0:
@@ -120,6 +174,7 @@ def decryptThisString( inputString, keyCode ):
 		elif tmp_ASCII_value > 127:
 			tmp_ASCII_value = tmp_ASCII_value - 127
 
+		# print(tmp_ASCII_value)
 		# Append the decrypted char to the rest of the decryptedString
 		decryptedString = decryptedString + chr(tmp_ASCII_value)
 
@@ -130,6 +185,16 @@ def decryptThisString( inputString, keyCode ):
 
 	# Returns the decrypted string	
 	return decryptedString
+
+def checkDecryptString(inputString):
+	if inputString=="":
+		return 0
+	elif not( (inputString[0:2]==">>") or (inputString[0:2]=="??") ):
+		return -1
+	elif (inputString[2:6]).isdigit()==False:
+		return -1
+	else:
+		return 1
 
 #**********************************************************************
 # mainSequence
@@ -143,34 +208,50 @@ def decryptThisString( inputString, keyCode ):
 #**********************************************************************
 def mainSequence( keyCode, OriginFileName, DestinationFileName, mode ):
 
-	print("enter ffunction success!!")
 	# Open the files for READING & WRITING
 	OriginFile = open(OriginFileName,'r')
 	DestinationFile = open(DestinationFileName,'w') 
+	error_flag=0
 
 	if mode==1:
 		while True:
 			tmpString = OriginFile.readline()
-			if tmpString=="":
-				break
+			# print("-------------------------------------------------------")
+
+			# Breaks when read EOF
+			if tmpString=="":		break
+
+			# ENCRYPT string & write to output file
 			processedString = encryptThisString(tmpString,keyCode)
 			DestinationFile.write(processedString)
-			#DestinationFile.write("\n")
 	else:
 		while True:
 			# Identifies the class of the original string by extracting the first 6 bytes
 			readString =  OriginFile.read(6)
-			if readString=="":
-				break
-			# print(readString+"|____|", end="")
+			#print(readString)
+
+			# Checks if string is in "??XXXX" or ">>XXXX" format --> invalid ENCRYPTED file (if format mismatch)
+			error_flag = checkDecryptString(readString)
+			if error_flag==0:		break
+			elif error_flag==-1:	break
+
+			# Extract the actual string, excluding the "??XXXX" or ">>XXXX" at the front
 			originalStringLength = int( readString[2:6] )
-			# print(originalStringLength)
 			actualString = OriginFile.read(originalStringLength)
+
+			# IF specified & actual str_len doesn't match --> invalid ENCRYPTED file 
+			if( len(actualString)!=originalStringLength ):
+				error_flag = -1
+				break
+
+			# DECRYPT string & write to output file
 			processedString = decryptThisString(actualString,keyCode)
 			DestinationFile.write(processedString)
 
+	# Close both read & write files when done
 	OriginFile.close()
 	DestinationFile.close()
+	return error_flag
 
 #**********************************************************************
 # TESTBENCH
@@ -182,23 +263,20 @@ if __name__ == '__main__':
 	KeyNumber = "123456"
 	keyCode = VID + PID + KeyNumber 
 
-	# # Testing encryptThisString() & decryptThisString() functions
-	# sampleString = "This is just a test"
+# 	# Testing encryptThisString() & decryptThisString() functions
+# 	sampleString = "This is just a test"
 
-	# print( "Sample String:")
-	# print( sampleString )
-	# print( "")
-	# encryptedString = encryptThisString(sampleString,keyCode)
-	# print( "Encrypted String:")
-	# print( encryptedString )
-	# print( "")
-	# decryptedString = decryptThisString(encryptedString,keyCode)
-	# print( "Decrypted String:")
-	# print( decryptedString )
-	# print( "")
-
-	# Testing entire encryption/decryption sequence
-	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/Sample.txt", 1 )
-	mainSequence( keyCode, "C:/Users/Justin Toh/Documents/GitHub/Textfile_Encryptor/resources/Sample_Encrypted.txt", 2 )
+# 	print( "Sample String:")
+# 	print( sampleString )
+# 	print( "")
+# 	encryptedString = encryptThisString(sampleString,keyCode)
+# 	print( "Encrypted String:")
+# 	print( encryptedString )
+# 	print( "")
+# 	originalStringLength = int( encryptedString[2:6] )
+# 	decryptedString = decryptThisString(encryptedString[6:originalStringLength+6],keyCode)
+# 	print( "Decrypted String:")
+# 	print( decryptedString )
+# 	print( "")
 
 	input("<<--End of Test-->>")

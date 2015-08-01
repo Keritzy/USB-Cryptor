@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 
+import os
+
 import resources.encryption_Functions as encrypt
 import resources.usb_Functions as usb
 
@@ -259,6 +261,7 @@ class StartProgramWidget(tk.Frame,Color):
 		self.FileInputObject   = FileInputObject
 		self.KeyInputObject    = KeyInputObject
 		self.RegisterUsbObject = RegisterUsbObject
+		self.config(bg=Color.bgColor)
 
 		# Initialize Images & Icons
 		self.toggleEncryptImage = tk.PhotoImage(file="resources/images/StartProgram_ToggleEncrypt.png")
@@ -270,11 +273,38 @@ class StartProgramWidget(tk.Frame,Color):
 		# Create a pseudo Button
 		self.toggleButton = tk.Label(self,image=self.toggleEncryptImage,bg=Color.grey,borderwidth=0)
 		self.startButton  = tk.Label(self,image=self.encryptImage,bg=Color.entryBg,borderwidth=0)
+		self.statusLabel  = tk.Label(self, text="",bg=Color.bgColor,fg=Color.entryText)
 
 		# Pack the widgets into the Frame
-		self.toggleButton.grid(row=0,column=0)
-		self.startButton.grid(row=0,column=1)
+		self.statusLabel.grid(row=0,column=1,sticky=W,pady=3)
+		self.toggleButton.grid(row=1,column=0)
+		self.startButton.grid(row=1,column=1)
 		self.enable()
+
+	# Generates a code used for ENCRYPTION/DECRYPTION
+	def generateCode(self,key,usb):
+
+		# Setup string for adding
+		offset = "A1B2C3D4"
+		offset = offset.encode('ascii', 'ignore')
+		key = key.encode('ascii', 'ignore')
+		usb = usb.encode('ascii', 'ignore')
+		code = ""
+		
+		for i in range(8):
+
+			tmp_ASCII_value = key[i] + usb[i] + offset[i]
+
+			# If the values exceed the ASCII range of 0~127, make it overflow/underflow
+			if tmp_ASCII_value < 0:
+				tmp_ASCII_value = tmp_ASCII_value + 127
+			elif tmp_ASCII_value > 127:
+				tmp_ASCII_value = tmp_ASCII_value - 127
+
+			code = code + chr(tmp_ASCII_value)
+
+		print(code)
+		return code
 
 	# Method for enabling widget		
 	def enable(self):
@@ -308,27 +338,53 @@ class StartProgramWidget(tk.Frame,Color):
 
 		def clickStartButton(event):
 			# Series of checks before executing the encryption/decryption sequence
-			if self.FileInputObject.checkValue() == -1:   return
-			if self.KeyInputObject.checkValue() == -1: 	  return
-			if self.RegisterUsbObject.checkValue() == -1: return
+			if self.FileInputObject.checkValue() == -1:   
+				self.statusLabel.config(text="No valid file selected!")
+				return
+			if self.KeyInputObject.checkValue() == -1:   
+				self.statusLabel.config(text="8-digit KEY not entered!")
+				return
+			if self.RegisterUsbObject.checkValue() == -1:   
+				self.statusLabel.config(text="USB not registered!")
+				return
+
+			# Clear statusLabel b/c all checks have passed
+			self.statusLabel.config(text="Processing...")
 
 			# Lock in values before executing the encryption/decryption sequence
 			originFileName = self.FileInputObject.getValue()		
 			KeyString 	 = self.KeyInputObject.getValue()
 			UsbString 	 = self.RegisterUsbObject.getValue()
 
-			# Generate Master KEY for ENCRYPTION/DECRYPTION
-			keyCode = UsbString+KeyString
+			# Generate keyCode for ENCRYPTION/DECRYPTION
+			keyCode = self.generateCode(UsbString,KeyString)
+			#keyCode = UsbString + KeyString
 
 			# Retrieve destination fileName & try if we can open the file
 			destinationFileName = filedialog.asksaveasfilename(filetypes=[ ('Text Files','*.txt') ], 
 			 								   title="Save file as...", defaultextension=".txt")
-			try:				filePointer = open(destinationFileName,'w')
-			except Exception:   return
+
+			if destinationFileName=="":
+				self.statusLabel.config(text="Task Cancelled")
+				return
+
+			try:				
+				filePointer = open(destinationFileName,'w')
+			except Exception:   
+				self.statusLabel.config(text="Destination file not valid!")
+				return
 
 			# If file seems alright, we execute the main sequence
 			filePointer.close()
-			encrypt.mainSequence(keyCode,originFileName,destinationFileName,self.state)
+			if( encrypt.mainSequence(keyCode,originFileName,destinationFileName,self.state) )==0:
+				# Whole process succeeded...
+				if self.state==1:	self.statusLabel.config(text="ENCRYPTION complete!")
+				else:				self.statusLabel.config(text="DECRYPTION complete!")
+			else:
+				# Invalid file used for decryption, so we remove what we wrote halfway...
+				self.statusLabel.config(text="Invalid file for DECRYPTION!")
+				os.remove(destinationFileName)
+
 
 		# Enable + bind events to sub-widgets
 		self.toggleButton.bind("<Enter>",hoverToggleButton)
