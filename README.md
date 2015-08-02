@@ -1,7 +1,14 @@
 # USBCRYPTOR
-A textfile encryptor/decryptor made with Python 3 & Tkinter UI Framework
+Textfile encryptor/decryptor made with Python 3 & Tkinter UI Framework
 
 ![ScreenShot](resources/images/screenshot.png)
+[Download the executable here!](https://www.dropbox.com/s/83xbkz0vci07vub/USBCRYPTOR_setup_v1.3.exe?dl=0) (Made w/ py2exe & Inno Setup Compiler)
+
+How it works?
+-------
++ When user registers a USB device, the program detects if there's any new device connected to the PC.
++ A function then retrieves the details of this new USB device (via the win32com module) & extracts its Vendor & Product ID (VID & PID).
++ An 8-digit KEY chosen by the user & the devices's PID/VID will be used for encryption/decryption algorithm.
 
 How to Encrypt a .txt file:
 -------
@@ -21,4 +28,4 @@ How to Decrypt a .txt file:
 
 Limitations:
 -------
-+ Only able to process .txt files with ASCII format, any other format (eg. UTF-8 etc.) will cause it to fail
++ Only able to process ASCII, any .txt files with other encodings (eg. UTF-8 etc.) will cause it to fail
