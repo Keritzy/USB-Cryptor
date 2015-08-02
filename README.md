@@ -6,9 +6,11 @@ Textfile encryptor/decryptor made with Python 3 & Tkinter UI Framework
 
 How it works?
 -------
-+ When user registers a USB device, the program detects if there's any new device connected to the PC.
-+ A function then retrieves the details of this new USB device (via the win32com module) & extracts its Vendor & Product ID (VID & PID).
-+ An 8-digit KEY chosen by the user & the devices's PID/VID will be used for encryption/decryption algorithm.
+1. When user registers a USB device, the program detects if there's any new device connected to the PC.
+2. A function then retrieves the details of this new USB device (via the win32com module) & extracts its [Vendor & Product ID (VID & PID)](http://www.voti.nl/docs/usb-pid.html).
+3. An 8-digit KEY (chosen by the user) & the registered device's PID/VID will be converted & concatenated into an ASCII-encoded string (labelled as "keyCode" in class.py).
+4. This keyCode is then used for encryption/decryption algorithm that slightly resembles a [polyalphabetic cipher](https://en.wikipedia.org/wiki/Polyalphabetic_cipher).
+5. The algorthim works on the principle of adding/subtracting the corresponding ASCII-integer values of keyCode & the strings that we extract out from the input file & encoding the resulting value before writing it into the output file.
 
 How to Encrypt a .txt file:
 -------
