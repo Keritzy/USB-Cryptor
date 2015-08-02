@@ -7,12 +7,15 @@ from resources.classes import KeyInputWidget
 from resources.classes import RegisterUsbWidget 
 from resources.classes import StartProgramWidget
 
+import win32com.client
+
 if __name__ == "__main__":
 
-	root = tk.Tk()                            		# Create app
+	root = tk.Tk()                      			# Create app
+	root.iconify()									# Hide UI window to let the program load all the objects on the UI
+	root.iconbitmap("resources/images/icon.ico")	#Add Icon to GUI window
 	root.geometry( "800x500" )						# Set dimensions in pixels
-	root.wm_title("USB_CRYPTOR")    				# Add title to GUI window
-	#root.iconbitmap("resources/ge_logo.ico")       # Add Icon to GUI window
+	root.wm_title("USBCRYPTOR")    				# Add title to GUI window
 	root.resizable(0,0)								# Make the Window not resizable
 
 	# Add in the background for the UI
@@ -31,4 +34,5 @@ if __name__ == "__main__":
 	B.place(x=83,y=330)
 	C.place(x=83,y=379)
 	D.place(x=486,y=328)
+	root.deiconify()								# Done loading all the object, un-hide UI window
 	root.mainloop()

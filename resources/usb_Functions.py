@@ -1,17 +1,4 @@
 #!/usr/bin/python
-
-#----------------------------------------------------------------------
-# Main Objective:
-# Obtain the Product ID (PID) & Vendor ID (VID) of any USB device being inserted
-#----------------------------------------------------------------------
-
-#----------------------------------------------------------------------
-# Approach :
-# 1. Make a function to create a list of USB device data (strings)
-# 2. Obtain 2 list of USB device data (1x b4 plugging in the chosen USB device & 1x after)
-# 3. Implement an algorithm to compare & find the new device ID (using the lists made in step 2)
-# 4. Once ID is found, use another algorithm to extract the VID & PID (HEX)
-#----------------------------------------------------------------------
 import win32com.client
 
 #**********************************************************************
@@ -90,7 +77,7 @@ def getNewDeviceID(oldList, newList):
 # id_string - string to extract VID, PID values from
 #----------------------------------------------------------------------
 # RETURN:   
-# idValue => extracted string ( VID+PID)
+# idValue => extracted string (VID+PID)
 #**********************************************************************
 def extractID(id_string):
 

@@ -8,11 +8,11 @@ import os
 import resources.encryption_Functions as encrypt
 import resources.usb_Functions as usb
 
-#----------------------------------------------------------------------
-# Main Objective:
-# Create classes for widgets since they're going to be heavily customized to look
-# modern & non-native...
-#----------------------------------------------------------------------
+#**********************************************************************
+# [CLASS] Color:
+#   - Define a set of colors used for the UI
+#   - Used this an a parent class so it's easier to reference them (b/c global/constant supported like in C)
+#**********************************************************************
 class Color():
 
 	# Define class variables -> meant to be global COLOR constants
@@ -218,7 +218,15 @@ class RegisterUsbWidget(tk.Frame,Color):
 			if self.state==1:	self.button.config(image=self.buttonImage1,bg=Color.red)
 			elif self.state==2: self.button.config(image=self.buttonImage2,bg=Color.amber)
 			else:				self.button.config(image=self.buttonImage1,bg=Color.green)
-	
+
+		#--------------------------------------------------------------
+		# State Machine...
+		#--------------------------------------------------------------
+		# 1. Register USB (Initial State)
+		# 2. Registering USB
+		# 3. Register USB (register attempt failed)
+		# 4. USB Register
+		#--------------------------------------------------------------
 		def clickButton(event):
 			if (self.state==1) or (self.state==3):
 				self.oldDeviceList = usb.getDeviceIDList()
@@ -252,6 +260,7 @@ class RegisterUsbWidget(tk.Frame,Color):
 #   - Inherits the Color Class
 # 	- (Label) toggleButton => toggle between encryption/decryption mode
 #	- (Label) startButton => execute encrypt/decrypt sequence
+# 	- (Label) statusLabel => displays status messages/instructions
 #**********************************************************************
 class StartProgramWidget(tk.Frame,Color):
 	def __init__(self,parent,FileInputObject,KeyInputObject,RegisterUsbObject):
@@ -292,7 +301,6 @@ class StartProgramWidget(tk.Frame,Color):
 		code = ""
 		
 		for i in range(8):
-
 			tmp_ASCII_value = key[i] + usb[i] + offset[i]
 
 			# If the values exceed the ASCII range of 0~127, make it overflow/underflow
@@ -303,7 +311,7 @@ class StartProgramWidget(tk.Frame,Color):
 
 			code = code + chr(tmp_ASCII_value)
 
-		print(code)
+		code = code.decode('ascii', 'ignore')
 		return code
 
 	# Method for enabling widget		
@@ -357,17 +365,19 @@ class StartProgramWidget(tk.Frame,Color):
 			UsbString 	 = self.RegisterUsbObject.getValue()
 
 			# Generate keyCode for ENCRYPTION/DECRYPTION
-			keyCode = self.generateCode(UsbString,KeyString)
-			#keyCode = UsbString + KeyString
+			# keyCode = self.generateCode(UsbString,KeyString)
+			keyCode = UsbString + KeyString
 
 			# Retrieve destination fileName & try if we can open the file
 			destinationFileName = filedialog.asksaveasfilename(filetypes=[ ('Text Files','*.txt') ], 
 			 								   title="Save file as...", defaultextension=".txt")
 
+			# IF user clicked [CANCEL]
 			if destinationFileName=="":
 				self.statusLabel.config(text="Task Cancelled")
 				return
 
+			# check if selected file path is valid
 			try:				
 				filePointer = open(destinationFileName,'w')
 			except Exception:   
@@ -377,14 +387,13 @@ class StartProgramWidget(tk.Frame,Color):
 			# If file seems alright, we execute the main sequence
 			filePointer.close()
 			if( encrypt.mainSequence(keyCode,originFileName,destinationFileName,self.state) )==0:
-				# Whole process succeeded...
+				# IF whole process succeeded...
 				if self.state==1:	self.statusLabel.config(text="ENCRYPTION complete!")
 				else:				self.statusLabel.config(text="DECRYPTION complete!")
 			else:
 				# Invalid file used for decryption, so we remove what we wrote halfway...
 				self.statusLabel.config(text="Invalid file for DECRYPTION!")
 				os.remove(destinationFileName)
-
 
 		# Enable + bind events to sub-widgets
 		self.toggleButton.bind("<Enter>",hoverToggleButton)

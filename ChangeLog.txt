@@ -1,6 +1,12 @@
 -----------------------------------------------------------------
 USB_CRYPTOR v1.2 Changelog
 -----------------------------------------------------------------
+- Added an icon for the UI window
+- Made an install .exe for distribution!
+
+-----------------------------------------------------------------
+USB_CRYPTOR v1.2 Changelog
+-----------------------------------------------------------------
 *New Features*
 - Status Label above the ENCRYPT/DECRYPT button that displays msg if:
 	- encryption/decryption process is completed
@@ -19,10 +25,3 @@ USB_CRYPTOR v1.1 Changelog
 
 *Bug Fix*
 - Exception occurs upon clicking on "CANCEL" during asksaveasfile fileDialog
-
------------------------------------------------------------------
-TO DO LIST
------------------------------------------------------------------
-- Check for unicode & reject input file??
-- Icon for .exe
-- Convert into .exe for distribution
