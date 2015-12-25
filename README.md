@@ -2,6 +2,7 @@
 Textfile encryptor/decryptor made with Python 3 & Tkinter UI Framework
 
 ![ScreenShot](resources/images/screenshot.png)
+
 [Download the executable here!](https://www.dropbox.com/s/83xbkz0vci07vub/USBCRYPTOR_setup_v1.3.exe?dl=0) (Made w/ py2exe & Inno Setup Compiler)
 
 How it works?
