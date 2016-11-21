@@ -3,8 +3,6 @@ Textfile encryptor/decryptor made with Python 3 & Tkinter UI Framework
 
 ![ScreenShot](resources/images/screenshot.png)
 
-[Download the executable here!](https://www.dropbox.com/s/83xbkz0vci07vub/USBCRYPTOR_setup_v1.3.exe?dl=0) (Made w/ py2exe & Inno Setup Compiler)
-
 How it works?
 -------
 1. When user registers a USB device, the program detects if there's any new device connected to the PC.
@@ -31,4 +29,5 @@ How to Decrypt a .txt file:
 
 Limitations:
 -------
-+ Only able to process ASCII, any .txt files with other encodings (eg. UTF-8 etc.) will cause it to fail
++ Only able to process ASCII characters
++ Program won't work if your text files contains other character encodings (UTF-8 etc.)
